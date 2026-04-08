@@ -1,0 +1,33 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Editors / OS
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# Virtual environments
+.venv/
+venv/
+env/
+
+# Logs and outputs
+*.log
+outputs/
+workdir/
+tmp/
+
+# Large artifacts
+models/
+quantized_weights/
+LMUData/
+*.safetensors
+*.bin
+*.pt
+*.pth
+*.tar
+*.zip
