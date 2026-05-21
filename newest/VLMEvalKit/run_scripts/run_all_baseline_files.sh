@@ -1,0 +1,48 @@
+chmod +x deepseek_vl2_tiny_AI2D_TEST_run_baseline.sh
+qsub deepseek_vl2_tiny_AI2D_TEST_run_baseline.sh
+chmod +x deepseek_vl2_tiny_ChartQA_TEST_run_baseline.sh
+qsub deepseek_vl2_tiny_ChartQA_TEST_run_baseline.sh
+chmod +x deepseek_vl2_tiny_COCO_VAL_run_baseline.sh
+qsub deepseek_vl2_tiny_COCO_VAL_run_baseline.sh
+chmod +x deepseek_vl2_tiny_DocVQA_TEST_run_baseline.sh
+qsub deepseek_vl2_tiny_DocVQA_TEST_run_baseline.sh
+chmod +x deepseek_vl2_tiny_InfoVQA_TEST_run_baseline.sh
+qsub deepseek_vl2_tiny_InfoVQA_TEST_run_baseline.sh
+chmod +x deepseek_vl2_tiny_MME_run_baseline.sh
+qsub deepseek_vl2_tiny_MME_run_baseline.sh
+chmod +x deepseek_vl2_tiny_MMMU_TEST_run_baseline.sh
+qsub deepseek_vl2_tiny_MMMU_TEST_run_baseline.sh
+chmod +x deepseek_vl2_tiny_OCRVQA_TEST_run_baseline.sh
+qsub deepseek_vl2_tiny_OCRVQA_TEST_run_baseline.sh
+chmod +x deepseek_vl2_small_AI2D_TEST_run_baseline.sh
+qsub deepseek_vl2_small_AI2D_TEST_run_baseline.sh
+chmod +x deepseek_vl2_small_ChartQA_TEST_run_baseline.sh
+qsub deepseek_vl2_small_ChartQA_TEST_run_baseline.sh
+chmod +x deepseek_vl2_small_COCO_VAL_run_baseline.sh
+qsub deepseek_vl2_small_COCO_VAL_run_baseline.sh
+chmod +x deepseek_vl2_small_DocVQA_TEST_run_baseline.sh
+qsub deepseek_vl2_small_DocVQA_TEST_run_baseline.sh
+chmod +x deepseek_vl2_small_InfoVQA_TEST_run_baseline.sh
+qsub deepseek_vl2_small_InfoVQA_TEST_run_baseline.sh
+chmod +x deepseek_vl2_small_MME_run_baseline.sh
+qsub deepseek_vl2_small_MME_run_baseline.sh
+chmod +x deepseek_vl2_small_MMMU_TEST_run_baseline.sh
+qsub deepseek_vl2_small_MMMU_TEST_run_baseline.sh
+chmod +x deepseek_vl2_small_OCRVQA_TEST_run_baseline.sh
+qsub deepseek_vl2_small_OCRVQA_TEST_run_baseline.sh
+chmod +x deepseek_vl2_AI2D_TEST_run_baseline.sh
+qsub deepseek_vl2_AI2D_TEST_run_baseline.sh
+chmod +x deepseek_vl2_ChartQA_TEST_run_baseline.sh
+qsub deepseek_vl2_ChartQA_TEST_run_baseline.sh
+chmod +x deepseek_vl2_COCO_VAL_run_baseline.sh
+qsub deepseek_vl2_COCO_VAL_run_baseline.sh
+chmod +x deepseek_vl2_DocVQA_TEST_run_baseline.sh
+qsub deepseek_vl2_DocVQA_TEST_run_baseline.sh
+chmod +x deepseek_vl2_InfoVQA_TEST_run_baseline.sh
+qsub deepseek_vl2_InfoVQA_TEST_run_baseline.sh
+chmod +x deepseek_vl2_MME_run_baseline.sh
+qsub deepseek_vl2_MME_run_baseline.sh
+chmod +x deepseek_vl2_MMMU_TEST_run_baseline.sh
+qsub deepseek_vl2_MMMU_TEST_run_baseline.sh
+chmod +x deepseek_vl2_OCRVQA_TEST_run_baseline.sh
+qsub deepseek_vl2_OCRVQA_TEST_run_baseline.sh
