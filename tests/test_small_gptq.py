@@ -94,6 +94,67 @@ class Model(nn.Module):
 
 
 class SmallGPTQTests(unittest.TestCase):
+    def test_small_evaluation_driver_runs_all_six_benchmarks_and_exports_metrics(self):
+        import importlib.util
+        sys.path.insert(0,str(ROOT/'newest/VLMEvalKit'))
+        from small_gptq.evaluation import DEFAULT_BENCHMARKS, read_scores
+        spec=importlib.util.spec_from_file_location('small_eval_run',ROOT/'newest/VLMEvalKit/run.py')
+        driver=importlib.util.module_from_spec(spec);spec.loader.exec_module(driver)
+        with tempfile.TemporaryDirectory() as directory:
+            directory=Path(directory);metrics=directory/'metrics.json'
+            def dataset(name):
+                score={'perception':1200,'reasoning':300} if name=='MME' else (
+                    {'Final Score':500} if name=='OCRBench' else {'Overall':.5})
+                return SimpleNamespace(dataset_name=name,evaluate=lambda *args,**kwargs:score)
+            def infer(model,args,work_dir,model_name,dataset,**kwargs):
+                (Path(work_dir)/f'{model_name}_{dataset.dataset_name}.xlsx').touch()
+                return model
+            constructor=SimpleNamespace()
+            with patch('vlmeval.config.supported_VLM',{'deepseek_vl2_small':lambda **kw:constructor}), \
+                 patch('vlmeval.dataset.build_dataset',side_effect=dataset) as build, \
+                 patch('vlmeval.inference.infer_data_job',side_effect=infer) as run, \
+                 patch('vlmeval.smp.get_rank_and_world_size',return_value=(0,1)), \
+                 patch.object(sys,'argv',['run.py','--model','deepseek_vl2_small','--data',*DEFAULT_BENCHMARKS,
+                     '--work-dir',str(directory),'--metrics-file',str(metrics)]), redirect_stdout(io.StringIO()):
+                driver.main()
+            self.assertEqual(build.call_count,6)
+            self.assertEqual(run.call_count,6)
+            self.assertEqual(read_scores(metrics,DEFAULT_BENCHMARKS)['Avg'],50)
+
+    def test_small_evaluation_registry_and_real_scoring_survive_cleanup(self):
+        sys.path.insert(0,str(ROOT/'newest/VLMEvalKit'))
+        import pandas as pd
+        from vlmeval.dataset import SUPPORTED_DATASETS, build_dataset, OCRBench, ImageMCQDataset, ImageYORNDataset
+        from vlmeval.config import supported_VLM
+        self.assertEqual(set(SUPPORTED_DATASETS),{'MME','AI2D_TEST','MMBench_DEV_EN_V11','MMStar','MMMU_DEV_VAL','OCRBench'})
+        self.assertEqual(set(supported_VLM),{'deepseek_vl2_small'})
+        with self.assertRaises(ValueError):
+            build_dataset('POPE')
+        with tempfile.TemporaryDirectory() as directory:
+            directory=Path(directory)
+            ocr=directory/'ocr.xlsx'
+            pd.DataFrame([dict(prediction='Hello world',answer="['hello']",category='Regular Text Recognition')]).to_excel(ocr,index=False)
+            score=OCRBench.evaluate(str(ocr))
+            self.assertEqual(score['Final Score'],1)
+            self.assertEqual(score['Final Score Norm'],.1)
+            mcq=ImageMCQDataset.__new__(ImageMCQDataset)
+            mcq.dataset_name='MMStar'
+            mcq.data=pd.DataFrame([dict(index=1,question='Q1',A='one',B='two',answer='A'),
+                                   dict(index=2,question='Q2',A='one',B='two',answer='B')])
+            path=directory/'mcq.xlsx'
+            mcq.data.assign(prediction=['A','B']).to_excel(path,index=False)
+            result=mcq.evaluate(str(path),model='exact_matching',nproc=1)
+            self.assertEqual(float(result['Overall'].iloc[0]),1.)
+            mme=ImageYORNDataset.__new__(ImageYORNDataset);mme.dataset_name='MME'
+            categories=['OCR','artwork','celebrity','color','count','existence','landmark','position','posters','scene',
+                        'code_reasoning','commonsense_reasoning','numerical_calculation','text_translation']
+            rows=[dict(index=i*2+j,category=category,image_path=f'{i}.jpg',answer='Yes',prediction='Yes')
+                  for i,category in enumerate(categories) for j in range(2)]
+            path=directory/'mme.xlsx';pd.DataFrame(rows).to_excel(path,index=False)
+            result=mme.evaluate(str(path),model='exact_matching',nproc=1)
+            self.assertEqual(float(result['perception'].iloc[0]),2000)
+            self.assertEqual(float(result['reasoning'].iloc[0]),800)
+
     def test_evaluation_scores_normalize_ocr_and_average_excludes_mme(self):
         from small_gptq.evaluation import normalize_result, export_result, read_scores, DEFAULT_BENCHMARKS
         self.assertEqual(normalize_result('OCRBench', {'Final Score': 650})['score'],65)
@@ -364,7 +425,7 @@ class SmallGPTQTests(unittest.TestCase):
         function=next(n for n in tree.body if isinstance(n,ast.FunctionDef) and n.name=='parse_args')
         namespace={'argparse':argparse}
         exec(compile(ast.Module(body=[function],type_ignores=[]),'evaluation-parser','exec'),namespace)
-        with patch.object(sys,'argv',['run.py','--model','deepseek_vl2_small','--model_precision','fixed_gptq',
+        with patch.object(sys,'argv',['run.py','--model','deepseek_vl2_small','--data','MMStar','--model_precision','fixed_gptq',
                                       '--gptq_bank','bank','--json_file','assignment.json','--model_device','cuda:0']):
             args=namespace['parse_args']()
         self.assertEqual(args.gptq_bank,'bank')

@@ -1,13 +1,7 @@
-decord; platform_machine != 'arm64'
-eva-decord; platform_machine == 'arm64'
-gradio
 huggingface_hub
-imageio
 matplotlib
 numpy
-omegaconf
 openai
-opencv-python>=4.4.0.46
 openpyxl
 pandas
 pillow

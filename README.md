@@ -27,4 +27,10 @@ python -X utf8 -m unittest discover -s tests -p test_small_gptq.py -v
 
 CPU 测试验证参考 GPTQ 算术对齐、候选生成与组装、配置端点值、路由采样和精确预算。
 运行 Small 校准和完整 benchmark 需要模型、图片和兼容 CUDA 环境。
-其他模型和旧 AutoRound 文件不属于当前运行入口。
+
+代码目录：
+
+- `pipeline/small_gptq/`：GPTQ 候选、配置估值、MCKP、模型组装和结果汇总。
+- `newest/VLMEvalKit/`：Small 模型后端、六项评测与评分依赖。
+- `newest/data/`：五类校准数据的构建脚本。
+- `tests/`：CPU 回归测试。

@@ -1,5 +1,23 @@
-
-
+# coding=utf-8
+# Copyright 2023 DeepSeek-AI and The HuggingFace Inc. team. All rights reserved.
+#
+# This code is based on EleutherAI's GPT-NeoX library and the GPT-NeoX
+# and OPT implementations in this library. It has been modified from its
+# original forms to accommodate minor architectural differences compared
+# to GPT-NeoX and OPT used by the Meta AI team that trained the model.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+""" PyTorch DeepSeek model and compatible with both DeepSeekV2 and DeepSeekV3"""
 import math
 import warnings
 from typing import List, Optional, Tuple, Union
@@ -18,7 +36,7 @@ from transformers.cache_utils import Cache, DynamicCache
 from transformers.modeling_attn_mask_utils import _prepare_4d_causal_attention_mask
 from transformers.models.llama.modeling_llama import (
     LlamaAttention,
-    # LlamaFlashAttention2
+    LlamaFlashAttention2
 )
 from transformers.modeling_outputs import (
     BaseModelOutputWithPast,
@@ -532,6 +550,10 @@ class AddAuxiliaryLoss(torch.autograd.Function):
 
 
 class DeepseekV2MoE(nn.Module):
+    """
+    A mixed expert module containing shared experts.
+    """
+
     def __init__(self, config):
         super().__init__()
         self.config = config
@@ -863,8 +885,6 @@ class DeepseekV2Attention(nn.Module):
         #     k_pe, compressed_kv = past_key_value.update(k_pe, compressed_kv, self.layer_idx, cache_kwargs)
         #     compressed_kv = compressed_kv.squeeze(1)
 
-        # kv_b_proj = self.kv_b_proj.weight.view(self.num_heads, -1, self.kv_lora_rank)
-
 
         if past_key_value is not None:
             cache_kwargs = {"sin": sin, "cos": cos}  # Specific to RoPE models
@@ -882,12 +902,13 @@ class DeepseekV2Attention(nn.Module):
             k_pe = k_pe.to(k_pe_device)
             compressed_kv = compressed_kv.to(compressed_kv_device)
 
-        
+
         if isinstance(self.kv_b_proj, nn.Linear):
             kv_b_proj = self.kv_b_proj.weight.view(self.num_heads, -1, self.kv_lora_rank)
         elif hasattr(self.kv_b_proj, 'orig_layer'):
             kv_b_proj = self.kv_b_proj.orig_layer.weight.view(self.num_heads, -1, self.kv_lora_rank)
 
+        # kv_b_proj = self.kv_b_proj.weight.view(self.num_heads, -1, self.kv_lora_rank)
 
         q_absorb = kv_b_proj[:, :self.qk_nope_head_dim, :]
         out_absorb = kv_b_proj[:, self.qk_nope_head_dim:, :]
@@ -1223,7 +1244,7 @@ ATTENTION_CLASSES = {
     "mla_flash_attention_2": DeepseekV2FlashAttention2,
 
     "mha_eager": LlamaAttention,
-    # "mha_flash_attention_2": LlamaFlashAttention2
+    "mha_flash_attention_2": LlamaFlashAttention2
 }
 
 
@@ -1250,16 +1271,6 @@ class DeepseekV2DecoderLayer(nn.Module):
             )
             else DeepseekV2MLP(config)
         )
-
-
-        # if config.n_routed_experts is not None and layer_idx >= config.first_k_dense_replace and layer_idx % config.moe_layer_freq == 0:
-        #     print(f"layer id = {layer_idx}, DeepseekV2MoE")
-        #     self.mlp = DeepseekV2MoE(config)
-        # else:
-        #     print(f"layer id = {layer_idx},  DeepseekV2MLP")
-        #     self.mlp = DeepseekV2MLP(config)
-
-
         self.input_layernorm = DeepseekV2RMSNorm(
             config.hidden_size, eps=config.rms_norm_eps
         )
@@ -1301,7 +1312,6 @@ class DeepseekV2DecoderLayer(nn.Module):
 
         hidden_states = self.input_layernorm(hidden_states)
 
-        
         # Self Attention
         hidden_states, self_attn_weights, present_key_value = self.self_attn(
             hidden_states=hidden_states,
