@@ -31,7 +31,9 @@ Config generation and assignment logic.
 
 - `mckp_solver_deepseek.py`
 - `build_projection_quant_config.py`
-- `build_expert_config_global.py`
+
+The identical `build_expert_config_global.py` implementation is kept only at
+`newest/01_shapley_estimation/rgis_implementation/build_expert_config_global.py`.
 
 These files cover the main path from value estimates to a usable projection- or
 expert-level mixed-precision configuration.
@@ -93,3 +95,12 @@ pipeline/
 eval/vlmeval/vlm/
 PIPELINE.md
 ```
+
+## Shared DeepSeek modules
+
+`newest/VLMEvalKit/vlmeval/vlm/deepseek_model/` holds the common
+configuration, processor, vision, conversation, I/O, and multimodal model code.
+`DeepSeek_VL2` and `DeepSeek_VL2_quant` search that directory after their own
+package directory. Each package retains its distinct `modeling_deepseek.py`, so
+relative imports continue to select the original backend.
+The inference example is retained only at `DeepSeek_VL2/main.py`.

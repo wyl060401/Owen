@@ -25,7 +25,7 @@ Main files:
 
 - `pipeline/phase2/mckp_solver_deepseek.py`
 - `pipeline/phase2/build_projection_quant_config.py`
-- `pipeline/phase2/build_expert_config_global.py`
+- `newest/01_shapley_estimation/rgis_implementation/build_expert_config_global.py`
 
 Purpose:
 

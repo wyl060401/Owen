@@ -4,9 +4,17 @@ if __name__ == "__main__":
     import torch
     # from transformers import AutoModelForCausalLM
     
-    from processing_deepseek_vl_v2 import DeepseekVLV2Processor
-    from io_utils import load_pil_images
-    from modeling_deepseek_vl_v2 import DeepseekVLV2ForCausalLM 
+    if __package__:
+        from .processing_deepseek_vl_v2 import DeepseekVLV2Processor
+        from .io_utils import load_pil_images
+        from .modeling_deepseek_vl_v2 import DeepseekVLV2ForCausalLM
+    else:
+        import sys
+        from pathlib import Path
+        sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+        from DeepSeek_VL2.processing_deepseek_vl_v2 import DeepseekVLV2Processor
+        from DeepSeek_VL2.io_utils import load_pil_images
+        from DeepSeek_VL2.modeling_deepseek_vl_v2 import DeepseekVLV2ForCausalLM
 
     model_path = "deepseek-ai/deepseek-vl2-tiny"
     
