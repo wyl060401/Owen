@@ -130,6 +130,10 @@ You can launch the evaluation by setting either --data and --model or --config.
     parser.add_argument('--config', type=str, help='Path to the Config Json File')
     #quantization
     # parser.add_argument('--model_precision', type=str, help='model precision type')
+    parser.add_argument('--model_path', type=str, help='Local Small checkpoint for FP baseline')
+    parser.add_argument('--gptq_bank', type=str, help='Fixed Small GPTQ candidate bank')
+    parser.add_argument('--metrics-file', type=str, help='Write machine-readable evaluation scores')
+    parser.add_argument('--model_device', type=str, default='cuda:0')
     parser.add_argument('--bits', type=int, default=4, help='bitwidth')
     parser.add_argument('--quant_format', type=str, default="", help='quant_format')
     parser.add_argument('--model_precision', type=str, default="", help='quant_format')
@@ -395,6 +399,10 @@ def main():
                     # Perform the Evaluation
                     eval_results = dataset.evaluate(result_file, **judge_kwargs)
 
+                    if args.metrics_file and eval_results is not None:
+                        from small_gptq.evaluation import export_result
+                        export_result(args.metrics_file, model_name, dataset_name, eval_results)
+
                     if args.saveresults:
                         
                         list_1 = ["Model",    "dataset",     "model_precision",    "quant_format",     "bits",      "json_file",           "Overall"               ]
@@ -483,7 +491,6 @@ def main():
 
             print(activation_frequency_dict)
 
-            import json
             file_path = f"activation_profiling/activation_frequency_{args.model[0]}_{args.data[0]}.json"
 
             with open(file_path, 'w') as json_file:

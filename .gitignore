@@ -16,6 +16,7 @@ venv/
 env/
 
 # Logs and outputs
+.test-runs/
 *.log
 outputs/
 workdir/
@@ -31,3 +32,8 @@ LMUData/
 *.pth
 *.tar
 *.zip
+
+# Generated Small runs and calibration data
+small_gptq_runs/
+newest/data/multimodal_calib.jsonl
+newest/data/*_images/

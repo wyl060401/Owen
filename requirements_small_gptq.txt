@@ -1,0 +1,9 @@
+transformers==4.38.2
+accelerate
+safetensors
+sentencepiece
+timm>=0.9.16
+xformers>=0.0.21
+einops
+numpy
+pillow
