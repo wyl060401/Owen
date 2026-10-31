@@ -9,16 +9,11 @@ steps we actually needed in practice:
 1. Phase I Owen-value estimation
 2. Phase II mixed-precision assignment / config generation
 3. evaluation-side loading of exported quantized checkpoints
-4. benchmark result snapshots against MC-MoE
 
 This is still a trimmed repo. It intentionally excludes datasets, model weights,
 quantized checkpoint directories, logs, caches, and large generated outputs.
 
 ## Included Components
-
-### `configs/`
-
-Owen precision-allocation JSON files used during search / selection.
 
 ### `pipeline/phase1/`
 
@@ -66,7 +61,6 @@ Evaluation-side loading code.
 ### Root docs
 
 - `README.md`
-- `RESULTS.md`
 - `PIPELINE.md`
 
 ## Upstream Dependencies
@@ -92,12 +86,10 @@ read and reused with those upstream sources available.
 ## Layout
 
 ```text
-configs/
 pipeline/
   phase1/
   phase2/
   comparison/
 eval/vlmeval/vlm/
-RESULTS.md
 PIPELINE.md
 ```

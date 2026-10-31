@@ -66,15 +66,3 @@ Important implementation detail:
 
 - this repo uses the exported-checkpoint path for evaluation
 - it does not depend on an online AutoRound runtime quantization path
-
-## Benchmark notes
-
-The current benchmark snapshot is in `RESULTS.md`.
-
-Clear Owen wins observed in the current comparison snapshot include:
-
-- BLINK
-- VizWiz
-- MME total
-
-Several other tasks were close but still favored MC-MoE.
