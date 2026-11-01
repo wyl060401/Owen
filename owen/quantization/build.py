@@ -4,8 +4,8 @@ import json
 from pathlib import Path
 import torch
 from torch import nn
-from .backend import GPTQ
-from .model import embeddings, to_model_inputs
+from owen.quantization.backend import GPTQ
+from owen.models.model import embeddings, to_model_inputs
 
 
 def candidate(module, hessian, bits, group_size=128, percdamp=.01):
@@ -121,7 +121,7 @@ def build_bank(model, processor, samples, directory, model_path, seqlen=2048,
         def forward_layer():
             for h in hidden:
                 pos = torch.arange(h.shape[1], device=device).unsqueeze(0)
-                from .estimator import ConfigOwenEstimator
+                from owen.estimation.estimator import ConfigOwenEstimator
                 mask = ConfigOwenEstimator._prepare_attention_mask(model.language, h.shape[0], h.shape[1], h)
                 layer(h, attention_mask=mask, position_ids=pos, use_cache=False)
         for group in groups:
@@ -138,7 +138,7 @@ def build_bank(model, processor, samples, directory, model_path, seqlen=2048,
                 if names:
                     finish({n: targets[n] for n in names}, {n: engines[n] for n in names}, routed)
         with torch.no_grad():
-            from .estimator import ConfigOwenEstimator
+            from owen.estimation.estimator import ConfigOwenEstimator
             next_hidden = []
             for h in hidden:
                 pos = torch.arange(h.shape[1], device=device).unsqueeze(0)

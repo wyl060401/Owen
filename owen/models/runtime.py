@@ -1,7 +1,7 @@
 """Load selected fixed weights; never invoke a quantizer during evaluation."""
 import json
-from .bank import GPTQBank
-from .model import load_model
+from owen.quantization.bank import GPTQBank
+from owen.models.model import load_model
 
 
 def load_selected_model(bank_path, assignment_path, device='cuda:0'):

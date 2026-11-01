@@ -7,3 +7,5 @@ xformers>=0.0.21
 einops
 numpy
 pillow
+
+-r evaluation/requirements.txt

@@ -5,8 +5,8 @@ import os
 from pathlib import Path
 import sys
 
-ROOT = Path(__file__).resolve().parents[2]
-sys.path.insert(0, str(ROOT / 'pipeline'))
+ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(ROOT))
 
 def parse_args():
     parser = argparse.ArgumentParser(description='DeepSeek-VL2-Small benchmark evaluation')
@@ -33,7 +33,7 @@ def main():
     from vlmeval.dataset import build_dataset
     from vlmeval.inference import infer_data_job
     from vlmeval.smp import get_rank_and_world_size, load_env
-    from small_gptq.evaluation import export_result
+    from owen.evaluation.metrics import export_result
     args = parse_args()
     load_env()
     rank, world_size = get_rank_and_world_size()

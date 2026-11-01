@@ -36,9 +36,8 @@ def select_calibration_rows(rows, nsamples=128, seed=0):
 
 
 def load_model(model_path, device='cuda:0', dtype='bfloat16', validate_small=True):
-    sys.path.insert(0, str(ROOT / 'newest/VLMEvalKit/vlmeval/vlm'))
-    from DeepSeek_VL2.modeling_deepseek_vl_v2 import DeepseekVLV2ForCausalLM
-    from DeepSeek_VL2.processing_deepseek_vl_v2 import DeepseekVLV2Processor
+    from .deepseek_vl2.modeling_deepseek_vl_v2 import DeepseekVLV2ForCausalLM
+    from .deepseek_vl2.processing_deepseek_vl_v2 import DeepseekVLV2Processor
     config = json.loads((Path(model_path) / 'config.json').read_text(encoding='utf-8'))
     language = config.get('language_config', {})
     if validate_small and (language.get('hidden_size'), language.get('n_routed_experts'),

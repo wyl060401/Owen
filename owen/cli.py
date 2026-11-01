@@ -1,13 +1,13 @@
-"""One Small-only entry: bank, estimate, solve, assemble, evaluate, or all."""
+"""Build candidates, estimate utility, allocate precision, assemble, and evaluate."""
 import argparse
 import json
 import os
 from pathlib import Path
 import subprocess
 import sys
-from .evaluation import DEFAULT_BENCHMARKS, aggregate_runs, read_scores
+from owen.evaluation.metrics import DEFAULT_BENCHMARKS, aggregate_runs, read_scores
 
-ROOT = Path(__file__).resolve().parents[2]
+ROOT = Path(__file__).resolve().parents[1]
 
 
 def parser():
@@ -16,7 +16,7 @@ def parser():
     p.add_argument('--model', help='Existing DeepSeek-VL2-Small checkpoint directory')
     p.add_argument('--data', help='Multimodal calibration/valuation JSONL')
     p.add_argument('--image-root', help='Local replacement for LMUData/images')
-    p.add_argument('--work-dir', type=Path, default=ROOT / 'small_gptq_runs')
+    p.add_argument('--work-dir', type=Path, default=ROOT / 'runs')
     p.add_argument('--bank', type=Path, help='Existing fixed GPTQ bank for later stages')
     p.add_argument('--device', default='cuda:0')
     p.add_argument('--dtype', choices=['bfloat16', 'float16', 'float32'], default='bfloat16')
@@ -56,7 +56,7 @@ def main(argv=None):
             run_work = work / f'seed_{seed}'
             for stage in ['bank', 'estimate', 'solve', 'assemble', 'evaluate']:
                 # Override the requested stage, seed, and output in isolated processes.
-                child = [sys.executable, str(ROOT / 'run_small.py'), *argv,
+                child = [sys.executable, str(ROOT / 'run.py'), *argv,
                          '--work-dir', str(run_work), '--seed', str(seed)]
                 child[2 + argv.index('all')] = stage
                 subprocess.run(child, check=True)
@@ -72,14 +72,14 @@ def main(argv=None):
             metrics_path = work / 'evaluation/metrics.json'
             metrics_path.parent.mkdir(parents=True, exist_ok=True)
             metrics_path.write_text('{}', encoding='utf-8')
-            cmd = [sys.executable, str(ROOT / 'newest/VLMEvalKit/run.py'),
+            cmd = [sys.executable, str(ROOT / 'evaluation/run.py'),
                    '--model', 'deepseek_vl2_small', '--model_precision', 'fixed_gptq',
                    '--gptq_bank', str(bank_path), '--json_file', str(assignment_path),
                    '--model_device', args.device, '--work-dir', str(work / 'evaluation'),
                    '--metrics-file', str(metrics_path),
                    '--data', *args.benchmarks, '--mode', 'all', '--verbose']
-            env = dict(os.environ, PYTHONPATH=str(ROOT / 'pipeline') + os.pathsep + os.environ.get('PYTHONPATH', ''))
-            subprocess.run(cmd, check=True, cwd=ROOT / 'newest/VLMEvalKit', env=env)
+            env = dict(os.environ, PYTHONPATH=str(ROOT) + os.pathsep + os.environ.get('PYTHONPATH', ''))
+            subprocess.run(cmd, check=True, cwd=ROOT / 'evaluation', env=env)
             print(json.dumps(read_scores(metrics_path, args.benchmarks), indent=2), flush=True)
             continue
         import torch
@@ -88,8 +88,8 @@ def main(argv=None):
         if stage != 'solve':
             torch.cuda.set_device(torch.device(args.device))
         if stage == 'bank':
-            from .model import load_model, read_samples
-            from .build import build_bank
+            from owen.models.model import load_model, read_samples
+            from owen.quantization.build import build_bank
             torch.manual_seed(args.seed)
             model, processor = load_model(args.model, args.device, args.dtype)
             samples = read_samples(processor, args.data, args.nsamples, args.seed, args.image_root)
@@ -97,10 +97,10 @@ def main(argv=None):
                        args.group_size, quantize_vision=True)
             del model, processor, samples
         elif stage == 'estimate':
-            from .model import load_model, read_samples, embeddings, value
-            from .bank import GPTQBank
-            from .sampling import profile_and_sample
-            from .estimator import ConfigOwenEstimator
+            from owen.models.model import load_model, read_samples, embeddings, value
+            from owen.quantization.bank import GPTQBank
+            from owen.estimation.sampling import profile_and_sample
+            from owen.estimation.estimator import ConfigOwenEstimator
             bank = GPTQBank(bank_path)
             torch.manual_seed(args.seed)
             model, processor = load_model(bank.manifest['model_path'], args.device, bank.manifest['dtype'])
@@ -121,15 +121,15 @@ def main(argv=None):
             values_path.write_text(json.dumps(values, indent=2), encoding='utf-8')
             del model, processor
         elif stage == 'solve':
-            from .bank import GPTQBank
-            from .solve import solve
+            from owen.quantization.bank import GPTQBank
+            from owen.allocation.solve import solve
             bank = GPTQBank(bank_path)
             assignment, summary = solve(json.loads(values_path.read_text(encoding='utf-8')), bank, args.average_bits)
             assignment_path.write_text(json.dumps(assignment, indent=2), encoding='utf-8')
             (work / 'assignment_summary.json').write_text(json.dumps(summary, indent=2), encoding='utf-8')
             print(json.dumps(summary, indent=2), flush=True)
         elif stage == 'assemble':
-            from .runtime import load_selected_model
+            from owen.models.runtime import load_selected_model
             output = work / 'assembled'
             if output.exists():
                 raise FileExistsError(f'Choose a new work directory or remove the old assembled output: {output}')

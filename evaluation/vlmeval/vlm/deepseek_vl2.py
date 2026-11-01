@@ -7,8 +7,8 @@ from PIL import Image
 from .base import BaseModel
 from ..smp import *
 
-ROOT = Path(__file__).resolve().parents[4]
-sys.path.insert(0, str(ROOT / 'pipeline'))
+ROOT = Path(__file__).resolve().parents[3]
+sys.path.insert(0, str(ROOT))
 
 class DeepSeekVL2(BaseModel):
     INSTALL_REQ = True
@@ -18,14 +18,14 @@ class DeepSeekVL2(BaseModel):
         precision = getattr(args, 'model_precision', 'fp_baseline') or 'fp_baseline'
         device = getattr(args, 'model_device', 'cuda:0')
         if precision == 'fixed_gptq':
-            from small_gptq.runtime import load_selected_model
+            from owen.models.runtime import load_selected_model
             bank = getattr(args, 'gptq_bank', None)
             assignment = getattr(args, 'json_file', None)
             if not bank or not assignment or assignment == 'None':
                 raise ValueError('fixed_gptq requires --gptq_bank and --json_file')
             self.model, self.vl_chat_processor, self.tokenizer = load_selected_model(bank, assignment, device)
         elif precision == 'fp_baseline':
-            from small_gptq.model import load_model
+            from owen.models.model import load_model
             self.model, self.vl_chat_processor = load_model(getattr(args, 'model_path', None) or model_path, device)
             self.tokenizer = self.vl_chat_processor.tokenizer
         else:
@@ -92,7 +92,7 @@ class DeepSeekVL2(BaseModel):
 
     def generate_inner(self, message, dataset=None):
         conversation = self.prepare_inputs(message, dataset)
-        from .DeepSeek_VL2.io_utils import load_pil_images
+        from owen.models.deepseek_vl2.io_utils import load_pil_images
         pil_images = load_pil_images(conversation)
         if dataset == 'MMMU_DEV_VAL':
             if len(pil_images):

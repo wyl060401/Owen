@@ -6,8 +6,8 @@ from typing import List, Dict, Tuple, Optional, FrozenSet
 import torch
 import torch.nn as nn
 from transformers.modeling_attn_mask_utils import _prepare_4d_causal_attention_mask
-from .bank import candidate_weight, bind_model
-from .sampling import permutation_weights
+from owen.quantization.bank import candidate_weight, bind_model
+from owen.estimation.sampling import permutation_weights
 PROJ_NAMES_DEFAULT = ['gate_proj', 'up_proj', 'down_proj']
 
 def enumerate_menus(proj_names=None):

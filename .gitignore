@@ -16,14 +16,13 @@ venv/
 env/
 
 # Logs and outputs
-.test-runs/
 *.log
 outputs/
 workdir/
 tmp/
 
 # Large artifacts
-models/
+/models/
 quantized_weights/
 LMUData/
 *.safetensors
@@ -33,7 +32,7 @@ LMUData/
 *.tar
 *.zip
 
-# Generated Small runs and calibration data
-small_gptq_runs/
-newest/data/multimodal_calib.jsonl
-newest/data/*_images/
+# Generated runs and calibration data
+runs/
+data/multimodal_calib.jsonl
+data/*_images/
